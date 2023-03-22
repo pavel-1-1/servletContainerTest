@@ -27,37 +27,8 @@ public class MainServlet extends HttpServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-//        resp.setContentType("text/plain");
-//        resp.getWriter().print("ok");
-//        Post post = new Post(23, "pavel");
-//        System.out.println(req.getRequestURI());
-//        if (req.getMethod().equals("GET") && req.getRequestURI().equals("/")) {
-//            resp.setContentType("text/html");
-//            //resp.getWriter().print("ok");
-//            req.getRequestDispatcher("index.html").forward(req, resp);
-//        }
-//        System.out.println(req.getRequestURI());
-//        if (req.getMethod().equals("POST") && req.getRequestURI().equals("/create")) {
-//            System.out.println("create" + req.getRequestURI());
-//            req.getRequestDispatcher("form.jsp").forward(req, resp);
-//        }
-//
-//        if (req.getMethod().equals("POST") && req.getRequestURI().equals("/create")) {
-//            String name = req.getParameter("id");
-//            String pass = req.getParameter("content");
-//            //resp.getWriter().print("toGson");
-//            req.getRequestDispatcher("form.jsp").forward(req, resp);
-//            System.out.println(name + " " + pass);
-//        } else if (req.getMethod().equals("GET") && req.getRequestURI().equals("/read")) {
-//            Gson gson = new Gson();
-//            resp.setContentType(APPLICATION_JSON);
-//            resp.getWriter().print(gson.toJson(post));
-//        }
-
+    protected void service(HttpServletRequest req, HttpServletResponse resp) {
         // если деплоились в root context, то достаточно этого
-
-
         try {
             final var path = req.getRequestURI();
             final var method = req.getMethod();
