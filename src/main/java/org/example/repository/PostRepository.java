@@ -4,44 +4,42 @@ import org.example.model.Post;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class PostRepository {
+    private final Map<Long, Post> posts = new ConcurrentHashMap<>();
 
-    private static List<Post> posts = new ArrayList<>();
-    private static long counter = 0;
+    private final AtomicLong counter = new AtomicLong(0);
 
     public List<Post> all() {
-        return posts;
+        return new ArrayList<>(posts.values());
     }
 
     public Optional<Post> getById(Post post) {
-        synchronized (posts) {
-            for (Post post1 : posts) {
-                if (post1.getId() == post.getId()) {
-                    post1.setContent(post.getContent());
-                    return Optional.of(post);
-                }
-            }
+        if (posts.containsKey(post.getId())) {
+            posts.put(post.getId(), post);
+            return Optional.of(post);
         }
         return Optional.empty();
     }
 
     public Post save(Post post) {
-        synchronized (posts) {
-            if (post.getId() == 0 && post.getContent() != null) {
-                counter++;
-                post.setId(counter);
-                posts.add(post);
-                return posts.get(posts.size() - 1);
-            }
+        if (post.getId() == 0 && post.getContent() != null) {
+            counter.getAndIncrement();
+            post.setId(counter.get());
+            posts.put(counter.get(), post);
+            return posts.get(counter.get());
         }
         return new Post(0, null);
     }
 
     public boolean removeById(long id) {
-        synchronized (posts) {
-            return posts.removeIf(n -> n.getId() == id);
+        if (posts.remove(id) == null) {
+            return false;
         }
+        return true;
     }
 }

@@ -1,14 +1,14 @@
 package org.example.controller;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.example.exception.NotFoundException;
 import org.example.model.Post;
 import org.example.service.PostService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Reader;
 
 public class PostController {
     public static final String APPLICATION_JSON = "application/json";
@@ -25,68 +25,56 @@ public class PostController {
         response.getWriter().print(gson.toJson(data));
     }
 
-    public void getById(String body, HttpServletResponse response) throws IOException {
+    public void getById(Reader body, HttpServletResponse response) throws IOException {
         Post post;
         try {
-            post = parsBody(body);
-        } catch (NumberFormatException e) {
+            post = parsGson(body);
+        } catch (NumberFormatException | JsonSyntaxException e) {
             response.getWriter().print("empty fields");
             return;
         }
-        Post post1;
         Gson gson = new Gson();
         System.out.println("update");
         try {
-            post1 = service.getById(post);
+            Post post1 = service.getById(post);
             response.getWriter().print("update " + gson.toJson(post1));
             System.out.println("update " + post1);
-        } catch (NotFoundException e) {
-            System.out.println("update catch" + post);
+        } catch (NotFoundException | NullPointerException e) {
+            System.out.println("update catch " + post);
             response.getWriter().print("is empty " + gson.toJson(post));
         }
     }
 
-    public void save(String body, HttpServletResponse response) throws IOException {
+    public void save(Reader body, HttpServletResponse response) throws IOException {
         response.setContentType(APPLICATION_JSON);
         final var gson = new Gson();
-        Post post;
         try {
-            post = parsBody(body);
-        } catch (NumberFormatException e) {
+            Post post = parsGson(body);
+            final Post data = service.save(post);
+            response.getWriter().print(gson.toJson(data));
+        } catch (NumberFormatException | NullPointerException | JsonSyntaxException e) {
             response.getWriter().print("empty fields");
-            return;
         }
-        final var data = service.save(post);
-        response.getWriter().print(gson.toJson(data));
     }
 
-    public void removeById(String body, HttpServletResponse response) throws IOException {
+    public void removeById(Reader body, HttpServletResponse response) throws IOException {
         response.setContentType(APPLICATION_JSON);
         final var gson = new Gson();
-        Post post;
         try {
-            post = parsBody(body);
-        } catch (NumberFormatException e) {
+            Post post = parsGson(body);
+            if (service.removeById(post.getId())) {
+                response.getWriter().print("remove " + gson.toJson(post));
+                return;
+            }
+        } catch (NumberFormatException | NullPointerException | JsonSyntaxException e) {
             response.getWriter().print("enter id");
-            return;
-        }
-
-        if (service.removeById(post.getId())) {
-            response.getWriter().print("remove " + gson.toJson(post));
             return;
         }
         response.getWriter().print("id absent!");
     }
 
-    private Post parsBody(String body) {
-        Map<String, String> map = new HashMap<>();
-        String[] params = body.split("&");
-        for (String param : params) {
-            String[] paramPars = param.split("=");
-            if (paramPars.length == 2) {
-                map.put(paramPars[0], paramPars[1]);
-            }
-        }
-        return new Post(Long.parseLong(map.get("id")), map.get("content"));
+    private Post parsGson(Reader body) {
+        Gson gson = new Gson();
+        return gson.fromJson(body, Post.class);
     }
 }

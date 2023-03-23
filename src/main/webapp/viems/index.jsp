@@ -26,7 +26,6 @@
             </label>
             <button type="submit">List create</button>
         </form>
-
         <form method="get" action="/read">
             <div>
                 Id: All read<br>
@@ -50,6 +49,7 @@
             </label>
             <button type="submit">List delete</button>
         </form>
+
     </div>
 </div>
 </body>
