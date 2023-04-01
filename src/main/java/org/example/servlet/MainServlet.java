@@ -1,8 +1,9 @@
 package org.example.servlet;
 
 import org.example.controller.PostController;
-import org.example.repository.PostRepository;
 import org.example.service.PostService;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -15,14 +16,19 @@ public class MainServlet extends HttpServlet {
 
     @Override
     public void init() {
-        final var repository = new PostRepository();
-        final var service = new PostService(repository);
+        final var factory = new DefaultListableBeanFactory();
+        final var reader = new XmlBeanDefinitionReader(factory);
+        reader.loadBeanDefinitions("beans.xml");
+
+        final var service = factory.getBean(PostService.class);
+        //final boolean isSame = service == factory.getBean("postService");
+
         controller = new PostController(service);
     }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) {
-        // РµСЃР»Рё РґРµРїР»РѕРёР»РёСЃСЊ РІ root context, С‚Рѕ РґРѕСЃС‚Р°С‚РѕС‡РЅРѕ СЌС‚РѕРіРѕ
+        // если деплоились в root context, то достаточно этого
         try {
             path = req.getRequestURI();
             method = req.getMethod();
